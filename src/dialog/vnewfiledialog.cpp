@@ -2,6 +2,7 @@
 #include "vnewfiledialog.h"
 #include "vconfigmanager.h"
 #include "vdirectory.h"
+#include "vlineedit.h"
 
 extern VConfigManager *g_config;
 
@@ -13,7 +14,7 @@ VNewFileDialog::VNewFileDialog(const QString &title, const QString &info,
 {
     setupUI();
 
-    connect(nameEdit, &QLineEdit::textChanged, this, &VNewFileDialog::handleInputChanged);
+    connect(m_nameEdit, &VLineEdit::textChanged, this, &VNewFileDialog::handleInputChanged);
 
     handleInputChanged();
 }
@@ -27,10 +28,10 @@ void VNewFileDialog::setupUI()
 
     // Name.
     QLabel *nameLabel = new QLabel(tr("Note &name:"));
-    nameEdit = new QLineEdit(defaultName);
+    m_nameEdit = new VLineEdit(defaultName);
     int dotIndex = defaultName.lastIndexOf('.');
-    nameEdit->setSelection(0, (dotIndex == -1) ? defaultName.size() : dotIndex);
-    nameLabel->setBuddy(nameEdit);
+    m_nameEdit->setSelection(0, (dotIndex == -1) ? defaultName.size() : dotIndex);
+    nameLabel->setBuddy(m_nameEdit);
 
     // InsertTitle.
     m_insertTitleCB = new QCheckBox(tr("Insert note name as title (for Markdown only)"));
@@ -42,10 +43,10 @@ void VNewFileDialog::setupUI()
             });
 
     QFormLayout *topLayout = new QFormLayout();
-    topLayout->addRow(nameLabel, nameEdit);
+    topLayout->addRow(nameLabel, m_nameEdit);
     topLayout->addWidget(m_insertTitleCB);
 
-    nameEdit->setMinimumWidth(m_insertTitleCB->sizeHint().width());
+    m_nameEdit->setMinimumWidth(m_insertTitleCB->sizeHint().width());
 
     m_warnLabel = new QLabel();
     m_warnLabel->setWordWrap(true);
@@ -73,7 +74,7 @@ void VNewFileDialog::setupUI()
 void VNewFileDialog::handleInputChanged()
 {
     bool showWarnLabel = false;
-    QString name = nameEdit->text();
+    QString name = m_nameEdit->getEvaluatedText();
     bool nameOk = !name.isEmpty();
     if (nameOk) {
         // Check if the name conflicts with existing note name.
@@ -96,7 +97,7 @@ void VNewFileDialog::handleInputChanged()
 
 QString VNewFileDialog::getNameInput() const
 {
-    return nameEdit->text();
+    return m_nameEdit->getEvaluatedText();
 }
 
 bool VNewFileDialog::getInsertTitleInput() const
